@@ -57,17 +57,23 @@ def match_url(url, dset_dict):  # tries to find keys in the dict that match the 
     return possible_orgs
 
 
-def query_bias(query, dset_dict, discount=False):
+def query_bias(query, dset_dict, discount=False, stop_after=10):
     rank = 1
     results_bias = 0
+    iterations = 100
     for result in search(query, tpe="nws", num=10, stop=10, pause=2):
+        iterations -= 1
+        if stop_after <= 0 or iterations <= 0:
+            break
         if discount:
             if len(match_url(result, dset_dict)) > 0:
+                stop_after -= 1
                 results_bias += float(dset_dict[match_url(result, dset_dict)[0]]['bias_val']) / rank
             else:
                 print("no bias for:", result)
         else:
             if len(match_url(result, dset_dict)) > 0:
+                stop_after -= 1
                 results_bias += float(dset_dict[match_url(result, dset_dict)[0]]['bias_val'])
             else:
                 print("no bias for:", result)
@@ -82,7 +88,7 @@ def main(q_arr, min_votes=25):
     print(NaN_count)  # number of sources for which the bias is not determined
     print(line_len_mismatch_count)  # number of lines in the dataset that were processed incorrectly
     for query in q_arr:
-        queries_bias.append(query_bias(query, dset_dict, discount=True))
+        queries_bias.append([query_bias(query, dset_dict, discount=True), query])
     print(queries_bias)
 
 
