@@ -49,7 +49,6 @@ def dict_from_csv(path, min_votes=25):
 def match_url(url, dset_dict):  # tries to find keys in the dict that match the url
     possible_orgs = []
     url = str(url).split("/")[2].replace('www.', '').split('.')[0]
-    print(url)
     for key in dset_dict.keys():
         if key.replace(' ', '').find(url) >= 0:
             possible_orgs.append(key)
@@ -61,6 +60,8 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
     rank = 1
     results_bias = 0
     iterations = 100
+    plus = 0
+    minus = 0
     for result in search(query, tpe="nws", num=10, stop=10, pause=2):
         iterations -= 1
         if stop_after <= 0 or iterations <= 0:
@@ -70,15 +71,19 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
                 stop_after -= 1
                 results_bias += float(dset_dict[match_url(result, dset_dict)[0]]['bias_val']) / rank
             else:
+                minus += -2 / rank
+                plus += 2 / rank
                 print("no bias for:", result)
         else:
             if len(match_url(result, dset_dict)) > 0:
                 stop_after -= 1
                 results_bias += float(dset_dict[match_url(result, dset_dict)[0]]['bias_val'])
             else:
+                minus += -2
+                plus += 2
                 print("no bias for:", result)
         rank += 1
-    return results_bias
+    return plus + results_bias, results_bias, minus + results_bias
 
 
 def main(q_arr, min_votes=25):
@@ -89,9 +94,21 @@ def main(q_arr, min_votes=25):
     print(line_len_mismatch_count)  # number of lines in the dataset that were processed incorrectly
     for query in q_arr:
         queries_bias.append([query_bias(query, dset_dict, discount=True), query])
-    print(queries_bias)
+    for x, y in queries_bias:
+        if max(x) < 0:
+            print("results for", y, "seem to be left-leaning.  Consider reformulating your query.", x)
+        if min(x) > 0:
+            print("results for", y, "seem to be right-leaning.  Consider reformulating your query.", x)
 
 
-queries = ["Is Obama a good president?", "Is Obama a bad president?"]
+queries = ["Is Obama a good president?", "Is Obama a bad president?", "Is Joe Biden a good president?",
+           "Is Joe Biden a bad president?", "Climate Change"]
 
+queries2 = ["WAP", "Transgender", "Second Amendment", "Freedom of Speech"]
+"""
+query = ""
+while query != "#":
+    query = input("query: ")
+    main([query])
+"""
 main(queries)
