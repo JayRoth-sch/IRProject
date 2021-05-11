@@ -1,4 +1,5 @@
 from googlesearch import search
+from itertools import combinations
 
 NaN_count = 0
 line_len_mismatch_count = 0
@@ -56,6 +57,51 @@ def match_url(url, dset_dict):  # tries to find keys in the dict that match the 
     return possible_orgs
 
 
+def mutate_query(query):
+    suggestions = []
+    instead_say = {"government": ["Washington"], "inheritance": ["the death tax"], "estate tax": ["the death tax"],
+                   "global economy": ["free market economy"], "globalization": ["free market economy"],
+                   "capitalism": ["free market economy"],
+                   "outsourcing": ["taxation", "regulation", "litigation", "innovation", "education"],
+                   "undocumented worker": ["illegal alien"], "foreign": ["international"],
+                   "tort reform": ["lawsuit abuse"],
+                   "trial lawyer": ["personal injury lawyer"], "corporate transparency": ["corporate accountability"],
+                   "school choice": ["parental choice", "equal opportunity education"]}
+
+    swap_left = []
+    swap_right = []
+
+    swap_combinations = set()
+
+    for key in instead_say.keys():
+        if query.find(key) > -1:
+            swap_right.append(key)
+
+    for val in instead_say.values():
+        for i in val:
+            if query.find(i) > -1:
+                swap_left.append(i)
+
+    for i in range(1, len(swap_right+swap_left) + 1):
+        if len(swap_combinations) > 10:
+            break
+        for j in combinations(swap_left+swap_right, i):
+            swap_combinations.add(tuple(j))
+
+    for i in swap_combinations:
+        q = query
+        for j in i:
+            if j in instead_say.keys():
+                q = q.replace(j, instead_say[j][0])
+            else:
+                for k in instead_say.keys():
+                    if j in instead_say[k]:
+                        q = q.replace(j, k)
+        suggestions.append(q)
+
+    return suggestions
+
+
 def query_bias(query, dset_dict, discount=False, stop_after=10):
     rank = 1
     results_bias = 0
@@ -97,18 +143,25 @@ def main(q_arr, min_votes=25):
     for x, y in queries_bias:
         if max(x) < 0:
             print("results for", y, "seem to be left-leaning.  Consider reformulating your query.", x)
+            if mutate_query(y):
+                print("you could try:", mutate_query(y))
         if min(x) > 0:
             print("results for", y, "seem to be right-leaning.  Consider reformulating your query.", x)
+            if mutate_query(y):
+                print("you could try:", mutate_query(y))
 
 
 queries = ["Is Obama a good president?", "Is Obama a bad president?", "Is Joe Biden a good president?",
            "Is Joe Biden a bad president?", "Climate Change"]
 
 queries2 = ["WAP", "Transgender", "Second Amendment", "Freedom of Speech"]
+
+queries3 = ["government", "washington", "inheritance", "the death tax"]
+
 """
 query = ""
 while query != "#":
     query = input("query: ")
     main([query])
 """
-main(queries)
+main(["illegal alien"])
