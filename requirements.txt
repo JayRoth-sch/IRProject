@@ -1,4 +1,9 @@
 beautifulsoup4==4.9.3
 certifi==2020.12.5
+click==8.0.0
 google==2.0.3
+joblib==1.0.1
+nltk==3.6.2
+regex==2021.4.4
 soupsieve==2.2.1
+tqdm==4.60.0
