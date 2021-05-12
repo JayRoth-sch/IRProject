@@ -1,4 +1,6 @@
+import math
 import os
+import time
 
 from googlesearch import search
 from itertools import combinations
@@ -117,11 +119,11 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
         if discount:
             if len(match_url(result, dset_dict)) > 0:
                 stop_after -= 1
-                results_bias += float(dset_dict[match_url(result, dset_dict)[0]]['bias_val']) / rank
+                results_bias += float(dset_dict[match_url(result, dset_dict)[0]]['bias_val']) / rank**2
             else:
-                minus += -2 / rank
-                plus += 2 / rank
-                print("no bias for:", result)
+                minus += -2 / rank**2
+                plus += 2 / rank**2
+                # print("no bias for:", result)
         else:
             if len(match_url(result, dset_dict)) > 0:
                 stop_after -= 1
@@ -129,20 +131,21 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
             else:
                 minus += -2
                 plus += 2
-                print("no bias for:", result)
+                # print("no bias for:", result)
         rank += 1
-    return plus + results_bias, results_bias, minus + results_bias
+    return 3 * ((plus + results_bias)/math.pi**2), 3 * results_bias / math.pi ** 2, 3 * (minus + results_bias) / math.pi ** 2
 
+dset_path = 'allsides.csv'
+dset_dict = dict_from_csv(dset_path, 25)
 
 def main(q_arr, min_votes=25):
-    os.remove('.google-cookie')
     queries_bias = []
-    dset_path = 'allsides.csv'
-    dset_dict = dict_from_csv(dset_path, min_votes)
+
     print(NaN_count)  # number of sources for which the bias is not determined
     print(line_len_mismatch_count)  # number of lines in the dataset that were processed incorrectly
     for query in q_arr:
         queries_bias.append([query_bias(query, dset_dict, discount=True), query])
+        os.remove('.google-cookie')
     for x, y in queries_bias:
         if max(x) < 0:
             print("results for", y, "seem to be left-leaning.  Consider reformulating your query.", x)
@@ -152,7 +155,27 @@ def main(q_arr, min_votes=25):
             print("results for", y, "seem to be right-leaning.  Consider reformulating your query.", x)
             if mutate_query(y):
                 print("you could try:", mutate_query(y))
-    print(queries_bias)
+    return queries_bias
+
+
+def queries_from_txt(path):
+    f = open('biases_from_txt3.txt', 'w')
+    g = open(path, 'r')
+    lines = 0
+    for line in g:
+        lines += 1
+        x, y = line.split(':: ')
+        if x != y:
+            out = main([x, y])
+            f.write(str(out) + "\n")
+            print(out)
+        else:
+            out = main([x])
+            f.write(str(out) + "\n")
+            print(out)
+        if lines % 10 == 0:
+            time.sleep(10)
+    f.close()
 
 queries = ["Is Obama a good president?", "Is Obama a bad president?", "Is Joe Biden a good president?",
            "Is Joe Biden a bad president?", "Climate Change"]
@@ -169,4 +192,4 @@ while query != "#":
     query = input("query: ")
     main([query])
 """
-main(queries4)
+queries_from_txt('parsed_out4.txt')
