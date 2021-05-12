@@ -152,7 +152,7 @@ def main(q_arr, min_votes=25):
             print("results for", y, "seem to be right-leaning.  Consider reformulating your query.", x)
             if mutate_query(y):
                 print("you could try:", mutate_query(y))
-
+    print(queries_bias)
 
 queries = ["Is Obama a good president?", "Is Obama a bad president?", "Is Joe Biden a good president?",
            "Is Joe Biden a bad president?", "Climate Change"]
@@ -161,10 +161,12 @@ queries2 = ["WAP", "Transgender", "Second Amendment", "Freedom of Speech"]
 
 queries3 = ["government", "washington", "inheritance", "the death tax"]
 
+queries4 = ["will trump run again in 2024 ?"]
+
 """
 query = ""
 while query != "#":
     query = input("query: ")
     main([query])
 """
-main(["illegal alien"])
+main(queries4)
