@@ -1,3 +1,5 @@
+import os
+
 from googlesearch import search
 from itertools import combinations
 
@@ -133,6 +135,7 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
 
 
 def main(q_arr, min_votes=25):
+    os.remove('.google-cookie')
     queries_bias = []
     dset_path = 'allsides.csv'
     dset_dict = dict_from_csv(dset_path, min_votes)
