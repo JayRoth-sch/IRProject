@@ -135,24 +135,28 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
 
 
 def main(q_arr, min_votes=25):
-    os.remove('.google-cookie')
-    queries_bias = []
-    dset_path = 'allsides.csv'
-    dset_dict = dict_from_csv(dset_path, min_votes)
-    print(NaN_count)  # number of sources for which the bias is not determined
-    print(line_len_mismatch_count)  # number of lines in the dataset that were processed incorrectly
-    for query in q_arr:
-        queries_bias.append([query_bias(query, dset_dict, discount=True), query])
-    for x, y in queries_bias:
-        if max(x) < 0:
-            print("results for", y, "seem to be left-leaning.  Consider reformulating your query.", x)
-            if mutate_query(y):
-                print("you could try:", mutate_query(y))
-        if min(x) > 0:
-            print("results for", y, "seem to be right-leaning.  Consider reformulating your query.", x)
-            if mutate_query(y):
-                print("you could try:", mutate_query(y))
-    print(queries_bias)
+    try:
+        os.remove('.google-cookie')
+    except:
+        print("no cookie to remove")
+    finally:
+        queries_bias = []
+        dset_path = 'allsides.csv'
+        dset_dict = dict_from_csv(dset_path, min_votes)
+        print(NaN_count)  # number of sources for which the bias is not determined
+        print(line_len_mismatch_count)  # number of lines in the dataset that were processed incorrectly
+        for query in q_arr:
+            queries_bias.append([query_bias(query, dset_dict, discount=True), query])
+        for x, y in queries_bias:
+            if max(x) < 0:
+                print("results for", y, "seem to be left-leaning.  Consider reformulating your query.", x)
+                if mutate_query(y):
+                    print("you could try:", mutate_query(y))
+            if min(x) > 0:
+                print("results for", y, "seem to be right-leaning.  Consider reformulating your query.", x)
+                if mutate_query(y):
+                    print("you could try:", mutate_query(y))
+        print(queries_bias)
 
 queries = ["Is Obama a good president?", "Is Obama a bad president?", "Is Joe Biden a good president?",
            "Is Joe Biden a bad president?", "Climate Change"]
