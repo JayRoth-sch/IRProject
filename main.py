@@ -112,7 +112,7 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
     iterations = 100
     plus = 0
     minus = 0
-    for result in search(query, tpe="nws", num=10, stop=10, pause=2):
+    for result in search(query, tpe="nws", num=10, stop=25, pause=2):
         iterations -= 1
         if stop_after <= 0 or iterations <= 0:
             break
@@ -136,7 +136,37 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
     return 3 * ((plus + results_bias)/math.pi**2), 3 * results_bias / math.pi ** 2, 3 * (minus + results_bias) / math.pi ** 2
 
 
-def fair_top_k(query):
+def fair_top_k(query, k):
+    rax = []
+    score = 0
+    rank = 1
+    result_buffer = []
+    for result in search(query, tpe="nws", num=10, stop=25, pause=2):
+        if len(rax) >= k:
+            return rax
+
+        for prev in range(len(result_buffer)):
+            new_score = score + (float(dset_dict[match_url(result_buffer[prev], dset_dict)[0]]['bias_val']) / (rank ** 2))
+            if abs(new_score) < (3 / (math.pi**2))*((.5*k) / rank) or score == new_score:
+                print(new_score)
+                score = new_score
+                rank += 1
+                rax.append(result_buffer.pop(prev))
+
+        if len(match_url(result, dset_dict)) > 0:
+            res_bias = float(dset_dict[match_url(result, dset_dict)[0]]['bias_val'])
+            if res_bias != 'nan':
+                new_score = score + (res_bias / (rank ** 2))
+                if abs(new_score) > (3 / (math.pi**2))*((.33*k) / rank):
+                    result_buffer.append(result)
+                else:
+                    print(new_score)
+                    score = new_score
+                    rank += 1
+                    rax.append(result)
+        else:
+            continue
+    return rax[:k], (3 / (math.pi**2))*score
 
 
 dset_path = 'allsides.csv'
@@ -195,26 +225,5 @@ queries3 = ["government", "washington", "inheritance", "the death tax"]
 
 queries4 = ["will trump run again in 2024 ?"]
 
-"""
-query = ""
-while query != "#":
-    query = input("query: ")
-    main([query])
-"""
-f = open('problem_words1.txt', 'w')
-instead = {"government": ["Washington"], "inheritance": ["the death tax"], "estate tax": ["the death tax"],
-               "global economy": ["free market economy"], "globalization": ["free market economy"],
-               "capitalism": ["free market economy"],
-               "outsourcing": ["taxation", "regulation", "litigation", "innovation", "education"],
-               "undocumented worker": ["illegal alien"], "foreign": ["international"],
-               "tort reform": ["lawsuit abuse"],
-               "trial lawyer": ["personal injury lawyer"], "corporate transparency": ["corporate accountability"],
-               "school choice": ["parental choice", "equal opportunity education"]}
-right = instead.keys()
-left = []
-for i in instead.values():
-    left += i
-f.write(str(main(right)))
-f.write("\n")
-f.write(str(main(left)))
-f.close()
+
+print(fair_top_k("trump", 7))
