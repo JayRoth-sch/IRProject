@@ -135,8 +135,13 @@ def query_bias(query, dset_dict, discount=False, stop_after=10):
         rank += 1
     return 3 * ((plus + results_bias)/math.pi**2), 3 * results_bias / math.pi ** 2, 3 * (minus + results_bias) / math.pi ** 2
 
+
+def fair_top_k(query):
+
+
 dset_path = 'allsides.csv'
 dset_dict = dict_from_csv(dset_path, 25)
+
 
 def main(q_arr, min_votes=25):
     queries_bias = []
@@ -145,7 +150,10 @@ def main(q_arr, min_votes=25):
     print(line_len_mismatch_count)  # number of lines in the dataset that were processed incorrectly
     for query in q_arr:
         queries_bias.append([query_bias(query, dset_dict, discount=True), query])
-        os.remove('.google-cookie')
+        try:
+            os.remove('.google-cookie')
+        except Exception as e:
+            pass
     for x, y in queries_bias:
         if max(x) < 0:
             print("results for", y, "seem to be left-leaning.  Consider reformulating your query.", x)
@@ -193,4 +201,20 @@ while query != "#":
     query = input("query: ")
     main([query])
 """
-queries_from_txt('parsed_out4.txt')
+f = open('problem_words1.txt', 'w')
+instead = {"government": ["Washington"], "inheritance": ["the death tax"], "estate tax": ["the death tax"],
+               "global economy": ["free market economy"], "globalization": ["free market economy"],
+               "capitalism": ["free market economy"],
+               "outsourcing": ["taxation", "regulation", "litigation", "innovation", "education"],
+               "undocumented worker": ["illegal alien"], "foreign": ["international"],
+               "tort reform": ["lawsuit abuse"],
+               "trial lawyer": ["personal injury lawyer"], "corporate transparency": ["corporate accountability"],
+               "school choice": ["parental choice", "equal opportunity education"]}
+right = instead.keys()
+left = []
+for i in instead.values():
+    left += i
+f.write(str(main(right)))
+f.write("\n")
+f.write(str(main(left)))
+f.close()
