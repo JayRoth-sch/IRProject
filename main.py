@@ -177,6 +177,7 @@ def queries_from_txt(path):
             time.sleep(10)
     f.close()
 
+
 queries = ["Is Obama a good president?", "Is Obama a bad president?", "Is Joe Biden a good president?",
            "Is Joe Biden a bad president?", "Climate Change"]
 
