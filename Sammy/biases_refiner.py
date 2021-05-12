@@ -47,6 +47,10 @@ def output_refiner(file_path):
     mean_actual_one = mean_actual_one/count
     mean_min_one = mean_min_one/count
 
+    mean_max_two = mean_max_two/count
+    mean_actual_two = mean_actual_two/count
+    mean_min_two = mean_min_two/count
+
     mean_actual_difference = mean_actual_difference/count
     mean_min_difference = mean_min_difference/count
     mean_max_difference = mean_max_difference/count
