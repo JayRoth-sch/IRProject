@@ -1,0 +1,14 @@
+{
+    "manifest_version": 2,
+    "name": "DeBias Google!",
+    "description": "This extension takes a Google search and returns a (potentially) less biased one!",
+    "version": "1.0",
+    "omnibox": { "keyword" : "debias" },
+    "icons": {
+        "16": "img.png"
+    },
+    "background": {
+        "persistent": false,
+        "scripts": ["background.js"]
+    }
+}
