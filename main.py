@@ -145,9 +145,10 @@ def fair_top_k(query, k):
         if len(rax) >= k:
             return rax
 
-        for prev in range(len(result_buffer)):
+        for prev in range(len(result_buffer)).__reversed__():
             new_score = score + (float(dset_dict[match_url(result_buffer[prev], dset_dict)[0]]['bias_val']) / (rank ** 2))
-            if abs(new_score) < (3 / (math.pi**2))*((.5*k) / rank) or score == new_score:
+
+            if abs(new_score) < (1 / (math.pi**2))*(k / rank) or score == new_score:
                 print(new_score)
                 score = new_score
                 rank += 1
@@ -157,7 +158,7 @@ def fair_top_k(query, k):
             res_bias = float(dset_dict[match_url(result, dset_dict)[0]]['bias_val'])
             if res_bias != 'nan':
                 new_score = score + (res_bias / (rank ** 2))
-                if abs(new_score) > (3 / (math.pi**2))*((.33*k) / rank):
+                if abs(new_score) > (1 / (math.pi**2))*(k / rank):
                     result_buffer.append(result)
                 else:
                     print(new_score)
@@ -166,7 +167,7 @@ def fair_top_k(query, k):
                     rax.append(result)
         else:
             continue
-    return rax[:k], (3 / (math.pi**2))*score
+    return rax[:k]
 
 
 dset_path = 'allsides.csv'
